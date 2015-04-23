@@ -207,22 +207,5 @@ double wloop_mean(int wR, int wT, const su3_matrix* links){
   return mean/ (3*N*N*N*N); // 3 directions & N^3 sites
 }
 
-double stat_pot_mean(int wR, const su3_matrix* links){
-  double mean = 0;
-  int site[4];
-  for(int z=0;z<N;z++){
-    for(int y=0;y<N;y++){
-      for(int x=0;x<N;x++){
-        for(int t=0;t<N;t++){
-            site[0]=t; site[1]=x; site[2]=y; site[3]=z;
-            for(int mu=1;mu<4;mu++){
-              mean += log(abs(wloop(wR,N-1,mu,links,site)/wloop(wR,N,mu,links,site)));
-            }
-        }
-      }
-    }
-  }
-  return mean/ (3*N*N*N*N); // 3 directions & N^3 sites
-}
 
 // end of Wilson loop ------------------------------------------------------

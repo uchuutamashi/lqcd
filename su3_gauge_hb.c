@@ -21,19 +21,6 @@ main (int argc, char** argv)
 {
   setup();
 
-  /* test matrix methods
-  su3_matrix A= su3_rand(r);
-  su3_matrix B= su3_rand(r);
-  su3_print(A);
-  su3_print(B);
-  su3_print(su3_mul(A,B));
-  su3_print(su3_inv(A));
-
-
-  return 0;
-  // end test */
-
-
   int O[4]={0,0,0,0};
 
   for(int n=0;n<Ntherm;n++) {
@@ -48,10 +35,10 @@ main (int argc, char** argv)
       hb_update(links,r,rands);
     }
 
-    if(n%20==0){printf("%d \n",n);}
+    if(n%5==0){printf("%d \n",n);}
     // Measurement
     //fprintf(output, "%f %f \n", wloop_mean(1,1,links),wloop_mean(1,2,links));
-    fprintf(output, "%f %f %f %f %f \n",stat_pot_mean(1,links),stat_pot_mean(2,links),stat_pot_mean(3,links),stat_pot_mean(4,links),stat_pot_mean(5,links));
+    fprintf(output, "%f %f %f %f %f %f %f %f\n",wloop_mean(8,1,links),wloop_mean(8,2,links),wloop_mean(8,3,links),wloop_mean(8,4,links),wloop_mean(8,5,links),wloop_mean(8,6,links),wloop_mean(8,7,links),wloop_mean(8,8,links));
   }
 
   printf("acc=%f\n", (double)acc/tot);
