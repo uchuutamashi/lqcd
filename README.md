@@ -1,2 +1,2 @@
-# lqcd
-pure gauge 
+# LQCD
+Unoptimized code for pure gauge lattice calculation.
