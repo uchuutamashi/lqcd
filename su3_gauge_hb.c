@@ -51,7 +51,7 @@ main (int argc, char** argv)
     if(n%20==0){printf("%d \n",n);}
     // Measurement
     //fprintf(output, "%f %f \n", wloop_mean(1,1,links),wloop_mean(1,2,links));
-    fprintf(output, "%f %f %f %f %f %f %f %f \n",wloop_mean(2,N-1,links),wloop_mean(2,N,links),wloop_mean(3,N-1,links),wloop_mean(3,N,links),wloop_mean(4,N-1,links),wloop_mean(4,N,links),wloop_mean(5,N-1,links),wloop_mean(5,N,links));
+    fprintf(output, "%f %f %f %f %f \n",stat_pot_mean(1,links),stat_pot_mean(2,links),stat_pot_mean(3,links),stat_pot_mean(4,links),stat_pot_mean(5,links));
   }
 
   printf("acc=%f\n", (double)acc/tot);
