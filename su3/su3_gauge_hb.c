@@ -38,7 +38,7 @@ main (int argc, char** argv)
     if(n%5==0){printf("%d \n",n);}
     // Measurement
     //fprintf(output, "%f %f \n", wloop_mean(1,1,links),wloop_mean(1,2,links));
-    fprintf(output, "%f %f %f %f %f %f %f %f\n",wloop_mean(8,1,links),wloop_mean(8,2,links),wloop_mean(8,3,links),wloop_mean(8,4,links),wloop_mean(8,5,links),wloop_mean(8,6,links),wloop_mean(8,7,links),wloop_mean(8,8,links));
+    fprintf(output, "%f %f %f %f %f %f %f %f\n",twloop2_mean(1,links),twloop2_mean(2,links),twloop2_mean(3,links),twloop2_mean(4,links),twloop2_mean(5,links),twloop2_mean(6,links),twloop2_mean(7,links),twloop2_mean(8,links));
   }
 
   printf("acc=%f\n", (double)acc/tot);

@@ -63,23 +63,6 @@ double plaquette(const su3_matrix* links, int mu, int nu, int* site){
   return su3_trace(A)/3.0;
 }
 
-double plaquette_mean(const su3_matrix* links, int mu, int nu){
-  double mean = 0;
-  int site[4];
-  for(int z=0;z<N;z++){
-    for(int y=0;y<N;y++){
-      for(int x=0;x<N;x++){
-        for(int t=0;t<N;t++){
-            site[0]=t; site[1]=x; site[2]=y; site[3]=z;
-            mean += plaquette(links,mu,nu,site);
-        }
-      }
-    }
-  }
-  return mean / (N*N*N*N);
-}
-
-
 // end of plaquette methods ------------------------------------------------
 
 // Metropolis update --------------------------------------------------------
@@ -209,3 +192,123 @@ double wloop_mean(int wR, int wT, const su3_matrix* links){
 
 
 // end of Wilson loop ------------------------------------------------------
+
+// Twisted Wilson loop -----------------------------------------------------
+// Ref: Lepage p.33
+
+// r=sqrt(2)
+double twloop2(int t, int mu, int nu ,const su3_matrix* links, int* site){
+  su3_matrix A[(2+t)*2];
+
+  // bottom side
+  for(int i=0;i<t;i++){
+    A[i]=links[index(site,0)];
+    shift(site,0,FORWARD);
+  }
+
+  // right side, twisted
+  A[t+0]=links[index(site,mu)];
+  shift(site,mu,FORWARD);
+  A[t+1]=links[index(site,nu)];
+  shift(site,nu,FORWARD);
+
+
+  // top side
+  for(int i=0;i<t;i++){
+    shift(site,0,BACKWARD);
+    A[t+2+i]=su3_inv(links[index(site,0)]);
+  }
+
+  // left side, twisted
+  shift(site,mu,BACKWARD);
+  A[t+2+t+0]=su3_inv(links[index(site,mu)]);
+  shift(site,nu,BACKWARD);
+  A[t+2+t+1]=su3_inv(links[index(site,nu)]);
+
+  // multiply
+  for(int i=1;i<2*(2+t);i++){
+    A[0]=su3_mul(A[0],A[i]);
+  }
+
+  return su3_trace(A[0])/3.0;
+}
+
+double twloop2_mean(int wT, const su3_matrix* links){
+  double mean = 0;
+  int site[4];
+  for(int z=0;z<N;z++){
+    for(int y=0;y<N;y++){
+      for(int x=0;x<N;x++){
+        for(int t=0;t<N;t++){
+            site[0]=t; site[1]=x; site[2]=y; site[3]=z;
+            for(int mu=1;mu<4;mu++){
+              for(int nu=1;nu<4;nu++){
+                if(mu!=nu){
+                  mean += twloop2(wT,mu,nu,links,site);
+                }
+              }
+            }
+        }
+      }
+    }
+  }
+  return mean/ (6*N*N*N*N); // 3 x 2 directions & N^3 sites
+}
+
+// r=sqrt(3)
+double twloop3(int t, const su3_matrix* links, int* site){
+  su3_matrix A[(3+t)*2];
+
+  // bottom side
+  for(int i=0;i<t;i++){
+    A[i]=links[index(site,0)];
+    shift(site,0,FORWARD);
+  }
+
+  // right side, twisted
+  A[t+0]=links[index(site,1)];
+  shift(site,1,FORWARD);
+  A[t+1]=links[index(site,2)];
+  shift(site,2,FORWARD);
+  A[t+2]=links[index(site,3)];
+  shift(site,3,FORWARD);
+
+
+  // top side
+  for(int i=0;i<t;i++){
+    shift(site,0,BACKWARD);
+    A[t+3+i]=su3_inv(links[index(site,0)]);
+  }
+
+  // left side, twisted
+  shift(site,1,BACKWARD);
+  A[t+3+t+0]=su3_inv(links[index(site,1)]);
+  shift(site,2,BACKWARD);
+  A[t+3+t+1]=su3_inv(links[index(site,2)]);
+  shift(site,3,BACKWARD);
+  A[t+3+t+2]=su3_inv(links[index(site,3)]);
+
+  // multiply
+  for(int i=1;i<2*(3+t);i++){
+    A[0]=su3_mul(A[0],A[i]);
+  }
+
+  return su3_trace(A[0])/3.0;
+}
+
+double twloop3_mean(int wT, const su3_matrix* links){
+  double mean = 0;
+  int site[4];
+  for(int z=0;z<N;z++){
+    for(int y=0;y<N;y++){
+      for(int x=0;x<N;x++){
+        for(int t=0;t<N;t++){
+            site[0]=t; site[1]=x; site[2]=y; site[3]=z;
+            mean += twloop3(wT,links,site);
+        }
+      }
+    }
+  }
+  return mean/ (N*N*N*N); // N^3 sites
+}
+// end of twisted Wilson loop --------------------------------------------
