@@ -33,6 +33,9 @@ gsl_spline *spline;
 #define lambda  1     // Strength of potential (anharmonic)
 #define epsilon 0.2   // Size of fluctuation
 
+// SUSY Parameters
+#define epsilon_susy 0.4   // Size of fluctuation
+
 
 #define N_bin 100
 #define dx 0.04   // x_range*2 / bin
@@ -56,6 +59,7 @@ FILE *fE0, *fpsi0, *fpsi;
 void setup();
 void cleanup();
 void update();
+void update_susy();
 int xtoi(double x);
 double itox(int i);
 
@@ -125,7 +129,7 @@ int main(void){
     psipp[i]  = gsl_spline_eval(spline,itox(i),spline_accel);
 
     if(psi[i]>0){
-      H_susy[i] = sq(psip[i]/psi[i]) - psipp[i]/psi[i];
+      H_susy[i] =  - (psipp[i]/psi[i]-sq(psip[i]/psi[i]))/sqrt(2); // TODO: This is technically wrong...
     }else{
       H_susy[i]=9999999;
     }
@@ -144,14 +148,14 @@ int main(void){
   N_acc=0;N_tot=0;
 
   // Thermalize
-  for(int n=0;n<N_therm;n++){
-    update();
+  for(int n=0;n<N_therm*10;n++){
+    update_susy();
   }
 
   // Calculate Wavefunction
   for(int n=0;n<N_meas;n++){
     // Decorrelate
-    for(int m=0;m<N_skip;m++){ update(); }
+    for(int m=0;m<N_skip*2;m++){ update_susy(); }
       for(int i=0;i<N_lat;i++){
       if(abs(x[i])<x_range){
         psi[xtoi(x[i])]+=1;
@@ -184,9 +188,16 @@ double itox(int i){
 // Calculate difference in action
 double dS(int i, double x_old){
   return (x[i]*(x[i]-x[(i+1)%N_lat]-x[(i-1+N_lat)%N_lat])/a
-          + alpha*a*sq(x[i]) + lambda*a*qd(x[i]) + a*H_susy[xtoi(x[i])])
+          + alpha*a*sq(x[i]) + lambda*a*qd(x[i]))
           - (x_old*(x_old-x[(i+1)%N_lat]-x[(i-1+N_lat)%N_lat])/a
-               + alpha*a*sq(x_old) + lambda*a*qd(x_old) + a*H_susy[xtoi(x_old)]);
+               + alpha*a*sq(x_old) + lambda*a*qd(x_old));
+}
+
+double dS_susy(int i, double x_old){
+  return (x[i]*(x[i]-x[(i+1)%N_lat]-x[(i-1+N_lat)%N_lat])/a
+          + a*H_susy[xtoi(x[i])])
+          - (x_old*(x_old-x[(i+1)%N_lat]-x[(i-1+N_lat)%N_lat])/a
+               + a*H_susy[xtoi(x_old)]);
 }
 
 void update(){
@@ -197,6 +208,21 @@ void update(){
     x[i]=x[i] + epsilon * (gsl_rng_uniform(r)-0.5)*2;
     N_acc++; N_tot++;
     d=dS(i,x_old);
+    if(d>0){
+      if(exp(-d)<gsl_rng_uniform(r)){ x[i]=x_old; N_acc--; } // Revert to old value
+    }
+  }
+}
+
+
+void update_susy(){
+  double x_old;
+  double d; // Difference in action
+  for(int i=0;i<N_lat;i++){
+    x_old=x[i];
+    x[i]=x[i] + epsilon_susy * (gsl_rng_uniform(r)-0.5)*2;
+    N_acc++; N_tot++;
+    d=dS_susy(i,x_old);
     if(d>0){
       if(exp(-d)<gsl_rng_uniform(r)){ x[i]=x_old; N_acc--; } // Revert to old value
     }

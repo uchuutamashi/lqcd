@@ -63,6 +63,26 @@ double plaquette(const su3_matrix* links, int mu, int nu, int* site){
   return su3_trace(A)/3.0;
 }
 
+// plaquette spatial mean
+double plaq_mean_s(int t, const su3_matrix* links){
+  double mean = 0;
+  int site[4];
+  for(int z=0;z<N;z++){
+    for(int y=0;y<N;y++){
+      for(int x=0;x<N;x++){
+          site[0]=t; site[1]=x; site[2]=y; site[3]=z;
+          for(int mu=1;mu<4;mu++){
+            for(int nu=mu+1;nu<4;nu++){
+              mean += plaquette(links,mu,nu,site);
+            }
+          }
+      }
+    }
+  }
+  return mean/ (3*N*N*N); // 3 directions & N^3 sites
+}
+
+
 // end of plaquette methods ------------------------------------------------
 
 // Metropolis update --------------------------------------------------------
@@ -135,15 +155,16 @@ double action(su3_matrix* links, int* site, int dir){
 
 // end of heat bath update -------------------------------------------------
 
-// Wilson loop -------------------------------------------------------------
+// Loops -------------------------------------------------------------------
+// Generic loop ------------------------------------------------------------
 
-double wloop(int r, int t, int mu,const su3_matrix* links, int* site){
+double loop(int r, int t, int mu, int nu, const su3_matrix* links, int* site){
   su3_matrix A[(r+t)*2];
 
   // bottom side
   for(int i=0;i<t;i++){
-    A[i]=links[index(site,0)];
-    shift(site,0,FORWARD);
+    A[i]=links[index(site,nu)];
+    shift(site,nu,FORWARD);
   }
 
   // right side
@@ -154,8 +175,8 @@ double wloop(int r, int t, int mu,const su3_matrix* links, int* site){
 
   // top side
   for(int i=0;i<t;i++){
-    shift(site,0,BACKWARD);
-    A[t+r+i]=su3_inv(links[index(site,0)]);
+    shift(site,nu,BACKWARD);
+    A[t+r+i]=su3_inv(links[index(site,nu)]);
   }
 
   // left side
@@ -170,6 +191,13 @@ double wloop(int r, int t, int mu,const su3_matrix* links, int* site){
   }
 
   return su3_trace(A[0])/3.0;
+}
+
+// end of Loop -------------------------------------------------------------
+// Wilson loop -------------------------------------------------------------
+
+double wloop(int r, int t, int mu,const su3_matrix* links, int* site){
+  return loop(r, t, mu, 0, links, site);
 }
 
 double wloop_mean(int wR, int wT, const su3_matrix* links){
@@ -189,9 +217,39 @@ double wloop_mean(int wR, int wT, const su3_matrix* links){
   }
   return mean/ (3*N*N*N*N); // 3 directions & N^3 sites
 }
-
-
 // end of Wilson loop ------------------------------------------------------
+// Polyakov loop -----------------------------------------------------------
+double polyakov(const su3_matrix* links, int* site){
+  su3_matrix A[N];
+
+  for(int i=0;i<N;i++){
+    A[i]=links[index(site,0)];
+    shift(site,0,FORWARD);
+  }
+
+  // multiply
+  for(int i=1;i<N;i++){
+    A[0]=su3_mul(A[0],A[i]);
+  }
+
+  return su3_trace(A[0])/3.0;
+}
+
+double polyakov_mean(const su3_matrix* links){
+  double mean = 0;
+  int site[4];
+  site[0]=0;
+  for(int z=0;z<N;z++){
+    for(int y=0;y<N;y++){
+      for(int x=0;x<N;x++){
+        site[1]=x; site[2]=y; site[3]=z;
+        mean += polyakov(links,site);
+      }
+    }
+  }
+  return mean/ (N*N*N);
+}
+// end of Polyakov loop ----------------------------------------------------
 
 // Twisted Wilson loop -----------------------------------------------------
 // Ref: Lepage p.33
@@ -312,3 +370,21 @@ double twloop3_mean(int wT, const su3_matrix* links){
   return mean/ (N*N*N*N); // N^3 sites
 }
 // end of twisted Wilson loop --------------------------------------------
+
+// Plaquette correlator
+double plaq_corr(int T, const su3_matrix* links){
+  double mean=0;
+  for(int i=0;i<N;i++){
+    mean+=plaq_mean_s(i,links)*plaq_mean_s(i+T,links);
+  }
+  return mean/N;
+}
+// end of plaquette correlator
+
+// TODO: vvvvvvvv
+
+
+// Smeared Wilson loop ---------------------------------------------------
+
+
+// end of smeared Wilson loop --------------------------------------------
