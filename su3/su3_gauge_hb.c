@@ -35,7 +35,7 @@ main (int argc, char** argv)
       hb_update(links,r,rands); //thermalize
     }
   }
-  
+
   printf("Thermalized! \n");
 
   for(int n=0;n<Ncf;n++){
@@ -49,8 +49,10 @@ main (int argc, char** argv)
 
     //fprintf(output, "%f %f \n", wloop_mean(1,1,links),wloop_mean(1,2,links));
     //fprintf(output, "%f %f %f %f %f %f %f %f\n",twloop2_mean(1,links),twloop2_mean(2,links),twloop2_mean(3,links),twloop2_mean(4,links),twloop2_mean(5,links),twloop2_mean(6,links),twloop2_mean(7,links),twloop2_mean(8,links));
-    fprintf(output, "%f %f %f %f %f %f %f %f\n",plaq_corr(1,links),plaq_corr(2,links),plaq_corr(3,links),plaq_corr(4,links),plaq_corr(5,links),plaq_corr(6,links),plaq_corr(7,links),plaq_corr(8,links));
-    printf("%f \n",polyakov_mean(links));
+    //fprintf(output, "%f %f %f %f %f %f %f %f\n",plaq_corr(1,links),plaq_corr(2,links),plaq_corr(3,links),plaq_corr(4,links),plaq_corr(5,links),plaq_corr(6,links),plaq_corr(7,links),plaq_corr(8,links));
+    //printf("%f \n",polyakov_mean(links));
+    printf( "%f \n", plaq_mean_s(0,links));
+    printf( "%f %f \n", wloop_mean(1,1,links),wloop_mean(1,2,links) );
   }
 
   printf("acc=%f\n", (double)acc/tot);

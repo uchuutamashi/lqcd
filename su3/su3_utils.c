@@ -39,6 +39,15 @@ void shift(int* site, int dir, int forward){
   }
 }
 
+// spatial rotation by 90deg of shape array
+void rotate(int n, int* shape){
+  for(int i=0;i<n;i++){
+    if(shape[i]==1) shape[i]=2;
+    if(shape[i]==2) shape[i]=3;
+    if(shape[i]==3) shape[i]=1;
+  }
+}
+
 // end of access pattern methods -------------------------------------------
 
 // Plaquette methods -------------------------------------------------------
@@ -158,7 +167,38 @@ double action(su3_matrix* links, int* site, int dir){
 // Loops -------------------------------------------------------------------
 // Generic loop ------------------------------------------------------------
 
+// TODO: not working
+double gloop(int n, int* shape, const su3_matrix* links, int* site){
+  su3_matrix A[2*n];
+
+  // forward
+  for(int i=0;i<n;i++){
+    A[i]=links[index(site,shape[i])];
+    shift(site,shape[i],FORWARD);
+  }
+
+  // backward
+  for(int i=0;i<n;i++){
+    shift(site,shape[i],BACKWARD);
+    A[n+i]=su3_inv(links[index(site,shape[i])]);
+  }
+
+  // multiply
+  for(int i=1;i<2*n;i++){
+    A[0]=su3_mul(A[0],A[i]);
+  }
+
+  return su3_trace(A[0])/3.0;
+}
+
+
 double loop(int r, int t, int mu, int nu, const su3_matrix* links, int* site){
+  int shape[r+t];
+  for(int i=0;i<t;i++)shape[i]=nu;
+  for(int i=0;i<r;i++)shape[t+i]=mu;
+
+  return gloop(r+t,shape,links,site);
+  /*
   su3_matrix A[(r+t)*2];
 
   // bottom side
@@ -190,7 +230,7 @@ double loop(int r, int t, int mu, int nu, const su3_matrix* links, int* site){
     A[0]=su3_mul(A[0],A[i]);
   }
 
-  return su3_trace(A[0])/3.0;
+  return su3_trace(A[0])/3.0;*/
 }
 
 // end of Loop -------------------------------------------------------------
